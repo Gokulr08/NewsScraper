@@ -39,7 +39,7 @@ existing_urls_cache = {}
 cumulative_articles_stored = 0
 cumulative_distinct_tickers = set()
 
-
+counting_articles = 0
 def populate_url_cache(ticker):
     ticker_dir = f"articles/{ticker}"
     existing_urls_cache[ticker] = set()
@@ -154,7 +154,7 @@ for current_start, current_end in process_date_blocks(start_date, end_date):
                 cumulative_articles_stored += 1
 
                 # Print a friendly message about the article being processed and saved
-                print(f"Article for {ticker} saved successfully")
+                print(f"{cumulative_articles_stored}: Article for {ticker} saved successfully")
 
         # Check if there are more pages to load
         if len(news_data) < 100:
