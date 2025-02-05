@@ -14,9 +14,11 @@ api_token = "xubakrabgfrygi5gyebnw6vcnl7lcmrjxxikridd"
 with open("tickers_list.txt", "r") as f:
     tickers_list = {line.strip().upper() for line in f if line.strip()}
 
+
 # Function to validate tickers
 def is_valid_ticker(ticker):
     return ticker.strip().upper() in tickers_list
+
 
 # Flexible date range processing
 def process_date_blocks(start_date, end_date, block_size=15):
@@ -25,6 +27,7 @@ def process_date_blocks(start_date, end_date, block_size=15):
         current_end = min(current_start + timedelta(days=block_size - 1), end_date)
         yield current_start, current_end
         current_start = current_end + timedelta(days=1)
+
 
 # Define the date range for the entire period
 start_date = datetime(2025, 1, 1, tzinfo=timezone)
@@ -35,6 +38,7 @@ existing_urls_cache = {}
 # Track cumulative counts
 cumulative_articles_stored = 0
 cumulative_distinct_tickers = set()
+
 
 def populate_url_cache(ticker):
     ticker_dir = f"articles/{ticker}"
@@ -49,12 +53,13 @@ def populate_url_cache(ticker):
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
 
+
 # Start processing the date blocks
 for current_start, current_end in process_date_blocks(start_date, end_date):
-    print(f"Processing: {current_start.strftime('%Y-%m-%d')} to {current_end.strftime('%Y-%m-%d')}")
+    print(f"\nProcessing: {current_start.strftime('%Y-%m-%d')} to {current_end.strftime('%Y-%m-%d')}")
 
     page = 1
-
+    total_articles_fetched = 0
     while True:
         params = {
             "section": "alltickers",
@@ -65,14 +70,14 @@ for current_start, current_end in process_date_blocks(start_date, end_date):
         }
 
         response = requests.get(base_url, params=params)
-        print(f"API Response Status: {response.status_code}")  # Check if API is working
         if response.status_code != 200:
             break
 
         news_data = response.json().get("data", [])
-        print(f"Number of articles retrieved: {len(news_data)}")  # Check number of articles retrieved
         if not news_data:
             break
+
+        total_articles_fetched += len(news_data)
 
         for news in news_data:
             article_url = news.get("news_url", "")
@@ -84,8 +89,6 @@ for current_start, current_end in process_date_blocks(start_date, end_date):
 
             # Filter valid tickers from the article tickers list
             valid_tickers = [t for t in article_tickers if is_valid_ticker(t)]
-            print(f"Article Tickers: {article_tickers}")  # See tickers for each article
-            print(f"Valid Tickers: {valid_tickers}")  # See valid tickers
             if not valid_tickers:
                 continue
 
@@ -150,9 +153,18 @@ for current_start, current_end in process_date_blocks(start_date, end_date):
                 existing_urls_cache[ticker].add(article_url)
                 cumulative_articles_stored += 1
 
+                # Print a friendly message about the article being processed and saved
+                print(f"Article for {ticker} saved successfully")
+
+        # Check if there are more pages to load
+        if len(news_data) < 100:
+            break
+
         page += 1
 
-    print(f"Articles saved for block {current_start.strftime('%Y-%m-%d')} to {current_end.strftime('%Y-%m-%d')}")
-    print(f"Till Now: Articles Stored = {cumulative_articles_stored}, Distinct Tickers = {len(cumulative_distinct_tickers)}\n")
+    print(
+        f"\nProcessed {total_articles_fetched} articles for block {current_start.strftime('%Y-%m-%d')} to {current_end.strftime('%Y-%m-%d')}")
+    print(
+        f"Till Now: Articles Stored = {cumulative_articles_stored}, Distinct Tickers = {len(cumulative_distinct_tickers)}\n")
 
 print("Scraping completed.")
