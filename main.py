@@ -6,7 +6,7 @@ import time
 import boto3
 import re
 from datetime import datetime, timedelta
-from main import download_nasdaq_tickers
+from download_tickers import download_nasdaq_tickers
 
 BUCKET_NAME = "your-s3-bucket-name"
 S3_CLIENT = boto3.client("s3")
