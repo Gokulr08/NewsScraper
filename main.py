@@ -124,8 +124,8 @@ def fetch_daily_articles():
     tz = pytz.timezone("UTC")
     today = datetime.now(tz)
     yesterday = today - timedelta(days=1)
-    date_from = yesterday.strftime("%Y-%m-%dT00:00:00Z")
-    date_to = today.strftime("%Y-%m-%dT23:59:59Z")
+    date_from = yesterday.strftime("%Y-%m-%d")
+    date_to = today.strftime("%Y-%m-%d")
     print(f"Fetching daily articles from {date_from} to {date_to}")
     fetch_and_save_for_all_tickers(date_from, date_to)
 
